@@ -1,0 +1,226 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Bir Rakunun Küçük Sırrı</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main id="app">
+    <section class="screen active" id="welcome">
+      <div class="grain"></div>
+      <div class="dot-heart" aria-label="Kalp"></div>
+      <p class="eyebrow">küçük bir şey hazırladım</p>
+      <h1>Hazır olduğunda<br>devam et.</h1>
+      <button class="primary" data-next="name">Devam et <span>→</span></button>
+    </section>
+
+    <section class="screen" id="name">
+      <div class="name-card">
+        <div class="tiny-star">✦</div>
+        <p class="eyebrow">sadece bir isim</p>
+        <h2>İsmini yazar mısın?</h2>
+        <p class="muted">Burada sana özel bir şey olacak.</p>
+        <input id="nameInput" maxlength="24" autocomplete="off" placeholder="İsmin..." />
+        <button class="primary" id="nameContinue">Devam et <span>→</span></button>
+        <p class="error" id="nameError"></p>
+      </div>
+    </section>
+
+    <section class="screen" id="music">
+      <div class="music-stage">
+        <div class="music-copy">
+          <p class="eyebrow">şimdi biraz müzik</p>
+          <h2 id="helloName">Senin için.</h2>
+          <p class="muted">Şarkının seçtiğim bölümü çalarken küçük arkadaşımız da ortaya çıkacak.</p>
+          <audio id="song" controls preload="auto">
+            <source src="assets/song.mp3" type="audio/mpeg">
+          </audio>
+          <button class="primary" id="musicContinue">Devam et <span>→</span></button>
+        </div>
+        <div class="monitor">
+          <div class="monitor-top"><span></span><span></span><span></span></div>
+          <div class="monitor-screen">
+            <div class="scan"></div>
+            <img class="raccoon" src="assets/rakun.png" alt="Rakun">
+            <div class="monitor-caption">connection: little secret</div>
+          </div>
+          <div class="monitor-foot"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="screen balloons-screen" id="balloons">
+      <div class="balloon-bg"></div>
+      <div class="balloon-vignette"></div>
+
+      <!-- 14 soft-blue balloon overlays; one is selected dynamically -->
+      <div class="floating-balloon b1"></div><div class="floating-balloon b2"></div>
+      <div class="floating-balloon b3"></div><div class="floating-balloon b4"></div>
+      <div class="floating-balloon b5"></div><div class="floating-balloon b6"></div>
+      <div class="floating-balloon b7"></div><div class="floating-balloon b8"></div>
+      <div class="floating-balloon b9"></div><div class="floating-balloon b10"></div>
+      <div class="floating-balloon b11"></div><div class="floating-balloon b12"></div>
+      <div class="floating-balloon b13"></div><div class="floating-balloon b14"></div>
+
+      <div class="question-card" id="questionCard">
+        <p class="eyebrow">küçük bir soru</p>
+        <h2>Mavi balonları sever misin?</h2>
+        <p id="personalLine">Çünkü bu sayfada onlardan biraz fazla var.</p>
+        <div class="choice-row">
+          <button class="choice yes" id="yesBtn">Evet</button>
+          <button class="choice no" id="noBtn">Hayır</button>
+        </div>
+      </div>
+
+      <button class="special-balloon green" id="greenBalloon" aria-label="Yeşil balon">oğul?</button>
+      <button class="special-balloon black" id="blackBalloon" aria-label="Siyah balon">?</button>
+    </section>
+
+    <section class="screen final-screen" id="final">
+      <div class="final-stars"></div>
+      <div class="final-message" id="finalMessage"></div>
+      <button class="ghost" id="restart">başa dön</button>
+    </section>
+  </main>
+  <script>
+document.addEventListener("DOMContentLoaded", () => {
+  const screens = Array.from(document.querySelectorAll(".screen"));
+  const nameInput = document.getElementById("nameInput");
+  const nameError = document.getElementById("nameError");
+  const song = document.getElementById("song");
+  const helloName = document.getElementById("helloName");
+  const personalLine = document.getElementById("personalLine");
+  const questionCard = document.getElementById("questionCard");
+  const greenBalloon = document.getElementById("greenBalloon");
+  const blackBalloon = document.getElementById("blackBalloon");
+  const finalMessage = document.getElementById("finalMessage");
+
+  function show(id) {
+    screens.forEach(screen => {
+      screen.classList.toggle("active", screen.id === id);
+    });
+    window.scrollTo(0, 0);
+  }
+
+  // All "Devam et" buttons that use data-next
+  document.querySelectorAll("[data-next]").forEach(button => {
+    button.addEventListener("click", () => show(button.dataset.next));
+  });
+
+  // Name screen
+  document.getElementById("nameContinue").addEventListener("click", () => {
+    const name = nameInput.value.trim();
+
+    if (!name) {
+      nameError.textContent = "Önce ismini yazmalısın.";
+      nameInput.focus();
+      return;
+    }
+
+    nameError.textContent = "";
+    localStorage.setItem("giftName", name);
+    helloName.textContent = `${name}, bu bölüm senin için.`;
+    show("music");
+
+    // Browsers can block autoplay. The page still works if that happens.
+    setTimeout(() => {
+      song.play().catch(() => {});
+    }, 500);
+  });
+
+  nameInput.addEventListener("keydown", event => {
+    if (event.key === "Enter") {
+      event.preventDefault();
+      document.getElementById("nameContinue").click();
+    }
+  });
+
+  // Music -> balloons
+  document.getElementById("musicContinue").addEventListener("click", () => {
+    song.pause();
+    show("balloons");
+
+    const balloons = document.querySelectorAll(".floating-balloon");
+    balloons.forEach((balloon, index) => {
+      setTimeout(() => {
+        balloon.style.opacity = ".9";
+        balloon.style.transform = "scale(1)";
+      }, 80 + index * 80);
+    });
+  });
+
+  function revealEnding(type) {
+    questionCard.style.display = "none";
+
+    document.querySelectorAll(".floating-balloon").forEach(balloon => {
+      balloon.style.opacity = ".22";
+    });
+
+    if (type === "yes") {
+      greenBalloon.style.display = "block";
+      blackBalloon.style.display = "none";
+    } else {
+      blackBalloon.style.display = "block";
+      greenBalloon.style.display = "none";
+    }
+  }
+
+  document.getElementById("yesBtn").addEventListener("click", () => {
+    revealEnding("yes");
+  });
+
+  document.getElementById("noBtn").addEventListener("click", () => {
+    revealEnding("no");
+  });
+
+  // Green balloon ending
+  greenBalloon.addEventListener("click", () => {
+    show("final");
+    finalMessage.innerHTML = `
+      <span class="small">rakunun cebinden çıkan not</span>
+      <span class="blue">bir gün kanatlarımı büyüteceğim</span>
+    `;
+  });
+
+  // Black balloon ending
+  blackBalloon.addEventListener("click", () => {
+    show("final");
+    finalMessage.innerHTML = `
+      <span class="small">hayal kırıklığına uğratılmış bir rakunun notu</span>
+      Mavi balonları sevmiyorsan sorun değil.<br><br>
+      <span class="blue">Bazı renkler seçilmez.<br>İnsan onları sessizce sevmeye devam eder.</span>
+      <br><br>
+      <span style="font-family:Inter,sans-serif;font-size:15px;color:#b6c2ce">Benimki açık mavi.</span>
+    `;
+  });
+
+  // Restart
+  document.getElementById("restart").addEventListener("click", () => {
+    questionCard.style.display = "";
+    greenBalloon.style.display = "none";
+    blackBalloon.style.display = "none";
+
+    document.querySelectorAll(".floating-balloon").forEach(balloon => {
+      balloon.style.opacity = "0";
+      balloon.style.transform = "scale(.7)";
+    });
+
+    nameError.textContent = "";
+    show("welcome");
+  });
+
+  // Restore name if the visitor refreshes.
+  const savedName = localStorage.getItem("giftName");
+  if (savedName) {
+    nameInput.value = savedName;
+  }
+});
+
+</script>
+</body>
+</html>
